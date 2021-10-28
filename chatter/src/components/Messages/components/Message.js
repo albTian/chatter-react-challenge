@@ -4,6 +4,12 @@ import cx from 'classnames';
 const ME = 'me';
 
 export default function Message({ nextMessage, message, botTyping }) {
+  // What shape is `message`??
+  // message {
+  //  user
+  //  id
+  //  message
+  // }
   return (
     <p
       className={cx(
