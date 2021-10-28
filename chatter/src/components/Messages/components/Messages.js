@@ -23,37 +23,57 @@ function Messages() {
   const [playReceive] = useSound(config.RECEIVE_AUDIO_URL);
   const { setLatestMessage } = useContext(LatestMessagesContext);
 
-  const [messageList, setMessageList] = useState([{user: 1, id: -1, message: initialBottyMessage}])
+  const [messageList, setMessageList] = useState([{ user: 1, id: -1, message: initialBottyMessage }])
   const [currentMessage, setCurrentMessage] = useState("")
   const [messageID, setMessageID] = useState(0)
   const [botTyping, setBotTyping] = useState(false)
 
-  const changeMessage = (event) => {
+  function changeMessage(event) {
     setCurrentMessage(event.target.value)
   }
 
-  const sendMessage = (event) => {
+  // Helper to handle updating the messageList state and everything that comes with that
+  // Only deals with state, not context. Returns the new message object for other functions to use
+  // (state) update messageList 
+  // (state) increment messageID
+  // (state) set currentMessage to nothing
+  function updateMessageList(message, user) {
     const nextMessage = {
       id: messageID,
-      user: ME,
-      message: currentMessage
+      user: user,
+      message: message
     }
     setMessageList(prevMessageList => [...prevMessageList, nextMessage])
-    // Look at this later...
-    setCurrentMessage("")
     setMessageID(prevMessageID => prevMessageID + 1)
-    // socket.emit(nextMessage)
-    socket.emmit()
+    return nextMessage
+  }
+
+  // Things to do when we send a message:
+  // (state) update internal state
+  // (context) update latestMessage
+  // (socket) send message to socket
+  // (misc) play send sound
+  function sendMessage(event) {
+    const nextMessage = updateMessageList(currentMessage, ME)
+    setLatestMessage("bot", nextMessage.message)
+    socket.emit('user-message', nextMessage.message)
     playSend()
   }
 
-  useEffect(() => {
-    console.log("on startup, connecting to socket...");
-    socket.connect();
-  }, [])
+  // Things to do when we recieve a message:
+  // (state) update internal state
+  // (context) update latestMessage
+  // (misc) play recieve sound
+  function recieveMessage(message) {
+    const nextMessage = updateMessageList(message, "bot")
+    setLatestMessage("bot", nextMessage.message)
+    playReceive()
+  }
 
   socket.on('bot-message', (message) => {
     console.log(`botty sending ${message}`);
+    recieveMessage(message)
+    setBotTyping(false)
   });
 
   socket.on('bot-typing', (message) => {
@@ -61,17 +81,17 @@ function Messages() {
     setBotTyping(true)
   });
 
-  socket.on('user-message', (message) => {
-    console.log(`user-message ${message}`);
-  });
+  // On startup useEffect: connect to socket
+  useEffect(() => {
+    socket.on("connect", () => console.log("connected!"))
+  }, [])
 
   return (
     <div className="messages">
       <Header />
       <div className="messages__list" id="message-list">
-        {/* List of messages here... maintain as state maybe ...?*/}
         {messageList.map(message => (
-          <Message message={message} nextMessage={"nextMessage"} botTyping={false} />
+          <Message message={message} nextMessage={"nextMessage"} botTyping={true} />
         ))}
       </div>
       <Footer message={currentMessage} sendMessage={sendMessage} onChangeMessage={changeMessage} />
