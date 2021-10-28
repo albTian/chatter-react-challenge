@@ -23,11 +23,13 @@ function Messages() {
   const [playReceive] = useSound(config.RECEIVE_AUDIO_URL);
   const { setLatestMessage } = useContext(LatestMessagesContext);
 
+  // Internal state for messages
   const [messageList, setMessageList] = useState([{ user: 1, id: -1, message: initialBottyMessage }])
   const [currentMessage, setCurrentMessage] = useState("")
   const [messageID, setMessageID] = useState(0)
   const [botTyping, setBotTyping] = useState(false)
 
+  // Wraper to update state alongside typing info
   function changeMessage(event) {
     setCurrentMessage(event.target.value)
   }
@@ -45,6 +47,7 @@ function Messages() {
     }
     setMessageList(prevMessageList => [...prevMessageList, nextMessage])
     setMessageID(prevMessageID => prevMessageID + 1)
+    setCurrentMessage("DOG")
     return nextMessage
   }
 
@@ -71,16 +74,16 @@ function Messages() {
     playReceive()
   }
 
-  
   // On startup useEffect: establish all socket connections
-  // 
+  // (connection) recieved a message
+  // (connection) is typing
   useEffect(() => {
     socket.on('bot-message', (message) => {
       console.log(`botty sending ${message}`);
       recieveMessage(message)
       setBotTyping(false)
     });
-  
+
     socket.on('bot-typing', () => {
       setBotTyping(true)
     });
@@ -91,7 +94,7 @@ function Messages() {
       <Header />
       <div className="messages__list" id="message-list">
         {messageList.map(message => (
-          <Message message={message} nextMessage={null} botTyping={botTyping} />
+          <Message message={message} nextMessage={message} botTyping={botTyping} />
         ))}
       </div>
       <Footer message={currentMessage} sendMessage={sendMessage} onChangeMessage={changeMessage} />
