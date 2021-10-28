@@ -47,7 +47,7 @@ function Messages() {
     }
     setMessageList(prevMessageList => [...prevMessageList, nextMessage])
     setMessageID(prevMessageID => prevMessageID + 1)
-    setCurrentMessage("DOG")
+    setCurrentMessage("")
     return nextMessage
   }
 
@@ -70,7 +70,6 @@ function Messages() {
   function recieveMessage(message) {
     const nextMessage = updateMessageList(message, "bot")
     setLatestMessage("bot", nextMessage.message)
-    console.log('PLATY RECIEVE MF');
     playReceive()
   }
 
@@ -79,7 +78,6 @@ function Messages() {
   // (connection) is typing
   useEffect(() => {
     socket.on('bot-message', (message) => {
-      console.log(`botty sending ${message}`);
       recieveMessage(message)
       setBotTyping(false)
     });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import cx from 'classnames';
 
 const ME = 'me';
@@ -10,6 +10,16 @@ export default function Message({ nextMessage, message, botTyping }) {
   //  id
   //  message
   // }
+  const ref = useRef(null)
+  const scrollToBottom = () => {
+    ref.current.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    if (ref) {
+      scrollToBottom()
+    }
+  })
   return (
     <p
       className={cx(
@@ -22,6 +32,7 @@ export default function Message({ nextMessage, message, botTyping }) {
         }
       )}
       key={message.id}
+      ref={ref}
     >
       {message.message}
     </p>
