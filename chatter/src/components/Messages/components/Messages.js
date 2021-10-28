@@ -67,23 +67,23 @@ function Messages() {
   function recieveMessage(message) {
     const nextMessage = updateMessageList(message, "bot")
     setLatestMessage("bot", nextMessage.message)
+    console.log('PLATY RECIEVE MF');
     playReceive()
   }
 
-  socket.on('bot-message', (message) => {
-    console.log(`botty sending ${message}`);
-    recieveMessage(message)
-    setBotTyping(false)
-  });
-
-  socket.on('bot-typing', (message) => {
-    console.log(`bot-typing ${message}`);
-    setBotTyping(true)
-  });
-
-  // On startup useEffect: connect to socket
+  
+  // On startup useEffect: establish all socket connections
+  // 
   useEffect(() => {
-    socket.on("connect", () => console.log("connected!"))
+    socket.on('bot-message', (message) => {
+      console.log(`botty sending ${message}`);
+      recieveMessage(message)
+      setBotTyping(false)
+    });
+  
+    socket.on('bot-typing', () => {
+      setBotTyping(true)
+    });
   }, [])
 
   return (
@@ -91,7 +91,7 @@ function Messages() {
       <Header />
       <div className="messages__list" id="message-list">
         {messageList.map(message => (
-          <Message message={message} nextMessage={"nextMessage"} botTyping={true} />
+          <Message message={message} nextMessage={null} botTyping={botTyping} />
         ))}
       </div>
       <Footer message={currentMessage} sendMessage={sendMessage} onChangeMessage={changeMessage} />
